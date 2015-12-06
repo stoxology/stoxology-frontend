@@ -60,7 +60,8 @@ document.addEventListener('DOMContentLoaded', function(event) {
 		// Create a Paper.js Path to draw a line into it:
 		path = new paper.Path();
 		// Setup path config
-		path.strokeColor = 'black';
+		path.strokeColor = '#fff';
+		path.strokeWidth = 3;
 		path.scaleParam = -3.14;
 		path.scrollPosition = canvas.offsetTop;
 		path.yOffset = 960;
