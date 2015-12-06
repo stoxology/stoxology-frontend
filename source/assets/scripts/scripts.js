@@ -1,5 +1,7 @@
 document.addEventListener('DOMContentLoaded', function(event) { 
-	var dataSet;
+	var dataSet, path, canvas, timelineFlag;
+	var lastScrollTop = 0;
+	var introScrollPosition = Math.max(document.documentElement.clientHeight, window.innerHeight || 0) /2;
 
 	// temporary pull for date until backend is ready
 	var myFirebaseRef = new Firebase('https://sweltering-inferno-9509.firebaseIO.com/');
@@ -52,13 +54,18 @@ document.addEventListener('DOMContentLoaded', function(event) {
 
 	// drawing first path
 	function drawPath(data) {
-		var canvas = document.getElementById('graph');
+		canvas = document.getElementById('graph');
 		// Create an empty project and a view for the canvas:
 		paper.setup(canvas);
 		// Create a Paper.js Path to draw a line into it:
-		var path = new paper.Path();
-		// Give the stroke a color
+		path = new paper.Path();
+		// Setup path config
 		path.strokeColor = 'black';
+		path.scaleParam = -3.14;
+		path.scrollPosition = canvas.offsetTop;
+		path.yOffset = 960;
+		path.sectionStep = 50;
+
 
 		// get first and last timestamp difference will help with scaling
 		var diff = Math.abs((data[0].date - data[data.length - 1].date)) / 1000000;
@@ -66,17 +73,18 @@ document.addEventListener('DOMContentLoaded', function(event) {
 		var timelineEvents = data.length;
 		// a step is the width for a timeline event
 		var step = diff / timelineEvents;
+		var relativeStep = canvas.clientWidth / path.sectionStep;
 
-		var relativeStep = canvas.clientWidth / 50;
-		var start = new paper.Point(-relativeStep, data[0].value * (-1.7) + 600);
+
+
+		var start = new paper.Point(-relativeStep, data[0].value * (path.scaleParam) + path.yOffset);
 		// Move to start and draw a line from there
 		path.moveTo(start);
 
 
-		for (var i = 1; i < 50; i++) {
-
+		for (var i = 1; i < path.sectionStep; i++) {
 			var x = i * relativeStep;
-			var y = data[i].value * (-1.7) + 600;
+			var y = data[i].value * (path.scaleParam) + path.yOffset;
 			path.lineTo(start.add([x, y]));
 		};
 
@@ -87,40 +95,69 @@ document.addEventListener('DOMContentLoaded', function(event) {
 		// path.lineTo(start.add([ 200, -50 ]));
 		// Draw the view now:
 		paper.view.draw();
-		dataSet.last = 49;
-		
-		// updating path
-		function onFrame(event) {
+		dataSet.first = 0;
+		dataSet.last = path.sectionStep - 1;
 
-			if(typeof dataSet[dataSet.last + 1 ] === 'undefined') {
+		window.addEventListener('scroll', throttle(onFrame, 10));
+	}
+
+	// updating path
+	function onFrame(event) {
+		var st = window.pageYOffset || document.documentElement.scrollTop;
+		var sectionStep = path.sectionStep;
+
+		if (st < path.scrollPosition) {
+			return false;
+		}
+
+		// forward
+		if (st > lastScrollTop) {
+			if (typeof dataSet[dataSet.last + 1] === 'undefined') {
 				return false;
 			}
 
-			console.log('test');
 			// Loop through the segments of the path:
-			for (var i = 0; i < 50; i++) {
+			for (var i = 0; i < sectionStep; i++) {
 				var segment = path.segments[i];
-
-				// A cylic value between -1 and 1
-				var sinus = Math.sin(event.time * 3 + i);
-				// console.log(segment);
+				
 				// Change the y position of the segment point:
-				if (i === 49) {
-					segment.point.y = dataSet[dataSet.last].value  * (-1.7) + 600;
+				if (i === sectionStep - 1) {
+					segment.point.y = dataSet[dataSet.last].value  * (path.scaleParam) + path.yOffset;
 					dataSet.last++;
-
-					// console.log('adding point', dataSet[dataSet.last].value);
 				} else {
 					segment.point.y = path.segments[i+1]._point._y;
 				}
-				
+				paper.view.draw();
 			}
-			// Uncomment the following line and run the script again
-			// to smooth the path:
-			// path.smooth();
+
+		} else {
+			// console.log('backwards');
+
+			if (typeof dataSet[dataSet.last - sectionStep] === 'undefined') {
+				return false;
+			}
+
+			// Loop through the segments of the path:
+			for (var j = sectionStep - 1; j > 0; j--) {
+				var segment = path.segments[j];
+				// Change the y position of the segment point:
+				if (j === 1) {
+					segment.point.y = dataSet[dataSet.last - sectionStep].value  * (path.scaleParam) + path.yOffset;
+					dataSet.last--;
+				} else {
+					segment.point.y = path.segments[j-1]._point._y;
+				}
+				paper.view.draw();
+			}
+
+		}
+		lastScrollTop = st;
+
+		if (path.last > path.sectionStep - 5) {
+			timelineFlag = true;
+			return timelineFlag;
 		}
 
-		window.addEventListener('scroll', throttle(onFrame, 20));
 	}
 
 
