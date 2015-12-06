@@ -10,16 +10,8 @@ To develop on this project, you'll have to have the following tools installed:
 
 If you have these ready, this is what you need to do:
 
-1. In the project root folder, run:
+1. In the project root folder to install developer dependencies, run: `npm install`
 
-`npm install`
+2. Run gulp task for development: `gulp`
 
-This will install developer dependencies.
-
-2. Run gulp task for development
-
-`gulp`
-
-3. Go to your browser to check the project and develop through live reload:
-
-`http://localhost:8080/`
+3. Go to your browser to check the project and develop through live reload: `http://localhost:8080/`

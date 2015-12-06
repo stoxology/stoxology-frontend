@@ -39,9 +39,7 @@ gulp.task('styles', function(){
 
 gulp.task('scripts', function() {
   return gulp.src('source/assets/scripts/**/*.js')
-  .pipe(jshint())
-  .pipe(jshint.reporter('default'))
-  .pipe(rename({suffix: '.min'}))
+  .pipe(concat('scripts.min.js'))
   .pipe(uglify())
   .pipe(gulp.dest('build/js'))
   .pipe(notify({ message: 'Scripts task complete' }));
