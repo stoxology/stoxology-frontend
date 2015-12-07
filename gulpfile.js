@@ -48,7 +48,7 @@ gulp.task('scripts', function() {
 // Image optimization w/cache to avoid re-compressing the same images
 
 gulp.task('images', function() {
-  return gulp.src('source/images/**/*')
+  return gulp.src('source/assets/images/**/*')
   .pipe(cache(imagemin({ optimizationLevel: 3, progressive: true, interlaced: true })))
   .pipe(gulp.dest('build/images'))
   .pipe(connect.reload())
@@ -74,7 +74,7 @@ gulp.task('webserver', function() {
 // Default task
 
 gulp.task('default', ['clean', 'webserver', 'watch'], function() {
-  gulp.start('html', 'styles', 'scripts');
+  gulp.start('html', 'styles', 'images', 'scripts');
 });
 
 // Watch !
@@ -92,6 +92,6 @@ gulp.task('watch', function() {
   gulp.watch('source/assets/scripts/**/*.js', ['scripts']);
 
   // Watch image files
-  // gulp.watch('source/assets/images/**/*', ['images']);
+  gulp.watch('source/assets/images/**/*', ['images']);
 
 });

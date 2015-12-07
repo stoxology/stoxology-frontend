@@ -1,7 +1,7 @@
 document.addEventListener('DOMContentLoaded', function(event) { 
 	var dataSet, path, canvas, timelineFlag;
 	var lastScrollTop = 0;
-	var introScrollPosition = Math.max(document.documentElement.clientHeight, window.innerHeight || 0) /2;
+	var introScrollPosition = Math.max(window.innerHeight, document.body.clientHeight || 0);
 
 	// temporary pull for date until backend is ready
 	var myFirebaseRef = new Firebase('https://sweltering-inferno-9509.firebaseIO.com/');
@@ -160,6 +160,20 @@ document.addEventListener('DOMContentLoaded', function(event) {
 		}
 
 	}
+
+
+	window.addEventListener('scroll', throttle(function() {
+		var percentage = 100 * window.scrollY / introScrollPosition;
+
+		if (percentage >= 1) {
+			console.log('hello switch');
+
+		} else {
+			console.log(document.querySelectorAll('.subsection.active + .subsection .subsection__content'));
+			// document.querySelectorAll('.subsection.active + .subsection .subsection__content').style.transform('translateY(' +  + 'vh)')
+		}
+		console.log(window.scrollY, introScrollPosition);
+	}, 80));
 
 
 });// You can place your scripts there
